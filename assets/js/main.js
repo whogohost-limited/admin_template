@@ -1,161 +1,93 @@
-/**
- * Main
- */
-
-'use strict';
-
-let menu, animate;
-
 (function () {
-  // Button & Pagination Waves effect
-  if (typeof Waves !== 'undefined') {
-    Waves.init();
-    Waves.attach(
-      ".btn[class*='btn-']:not(.position-relative):not([class*='btn-outline-']):not([class*='btn-label-'])",
-      ['waves-light']
-    );
-    Waves.attach("[class*='btn-outline-']:not(.position-relative)");
-    Waves.attach('.pagination .page-item .page-link');
-    Waves.attach('.dropdown-menu .dropdown-item');
-    Waves.attach('.light-style .list-group .list-group-item-action');
-    Waves.attach('.dark-style .list-group .list-group-item-action', ['waves-light']);
-    Waves.attach('.nav-tabs:not(.nav-tabs-widget) .nav-item .nav-link');
-    Waves.attach('.nav-pills .nav-item .nav-link', ['waves-light']);
-    Waves.attach('.menu-vertical .menu-item .menu-link.menu-toggle');
-  }
+  "use strict";
 
-  // Window scroll function for navbar
-  function onScroll() {
-    var layoutPage = document.querySelector('.layout-page');
-    if (layoutPage) {
-      if (window.pageYOffset > 0) {
-        layoutPage.classList.add('window-scrolled');
-      } else {
-        layoutPage.classList.remove('window-scrolled');
-      }
-    }
-  }
-  // On load time out
-  setTimeout(() => {
-    onScroll();
-  }, 200);
-
-  // On window scroll
+  // ======= Sticky
   window.onscroll = function () {
-    onScroll();
-  };
+    const ud_header = document.querySelector(".ud-header");
+    const sticky = ud_header.offsetTop;
+    const logo = document.querySelector(".navbar-brand img");
 
-  // Initialize menu
-  //-----------------
-
-  let layoutMenuEl = document.querySelectorAll('#layout-menu');
-  layoutMenuEl.forEach(function (element) {
-    menu = new Menu(element, {
-      orientation: 'vertical',
-      closeChildren: false
-    });
-    // Change parameter to true if you want scroll animation
-    window.Helpers.scrollToActive((animate = false));
-    window.Helpers.mainMenu = menu;
-  });
-
-  // Initialize menu togglers and bind click on each
-  let menuToggler = document.querySelectorAll('.layout-menu-toggle');
-  menuToggler.forEach(item => {
-    item.addEventListener('click', event => {
-      event.preventDefault();
-      window.Helpers.toggleCollapsed();
-    });
-  });
-
-  // Display menu toggle (layout-menu-toggle) on hover with delay
-  let delay = function (elem, callback) {
-    let timeout = null;
-    elem.onmouseenter = function () {
-      // Set timeout to be a timer which will invoke callback after 300ms (not for small screen)
-      if (!Helpers.isSmallScreen()) {
-        timeout = setTimeout(callback, 300);
-      } else {
-        timeout = setTimeout(callback, 0);
-      }
-    };
-
-    elem.onmouseleave = function () {
-      // Clear any timers set to timeout
-      document.querySelector('.layout-menu-toggle').classList.remove('d-block');
-      clearTimeout(timeout);
-    };
-  };
-  if (document.getElementById('layout-menu')) {
-    delay(document.getElementById('layout-menu'), function () {
-      // not for small screen
-      if (!Helpers.isSmallScreen()) {
-        document.querySelector('.layout-menu-toggle').classList.add('d-block');
-      }
-    });
-  }
-
-  // Display in main menu when menu scrolls
-  let menuInnerContainer = document.getElementsByClassName('menu-inner'),
-    menuInnerShadow = document.getElementsByClassName('menu-inner-shadow')[0];
-  if (menuInnerContainer.length > 0 && menuInnerShadow) {
-    menuInnerContainer[0].addEventListener('ps-scroll-y', function () {
-      if (this.querySelector('.ps__thumb-y').offsetTop) {
-        menuInnerShadow.style.display = 'block';
-      } else {
-        menuInnerShadow.style.display = 'none';
-      }
-    });
-  }
-
-  // Init helpers & misc
-  // --------------------
-
-  // Init BS Tooltip
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
-  });
-
-  // Accordion active class and previous-active class
-  const accordionActiveFunction = function (e) {
-    if (e.type == 'show.bs.collapse' || e.type == 'show.bs.collapse') {
-      e.target.closest('.accordion-item').classList.add('active');
-      e.target.closest('.accordion-item').previousElementSibling?.classList.add('previous-active');
+    if (window.pageYOffset > sticky) {
+      ud_header.classList.add("sticky");
     } else {
-      e.target.closest('.accordion-item').classList.remove('active');
-      e.target.closest('.accordion-item').previousElementSibling?.classList.remove('previous-active');
+      ud_header.classList.remove("sticky");
+    }
+
+    // === logo change
+    if (ud_header.classList.contains("sticky")) {
+      logo.src = "assets/images/logo/logo-2.svg";
+    } else {
+      logo.src = "assets/images/logo/logo.svg";
+    }
+
+    // show or hide the back-top-top button
+    const backToTop = document.querySelector(".back-to-top");
+    if (
+      document.body.scrollTop > 50 ||
+      document.documentElement.scrollTop > 50
+    ) {
+      backToTop.style.display = "flex";
+    } else {
+      backToTop.style.display = "none";
     }
   };
 
-  const accordionTriggerList = [].slice.call(document.querySelectorAll('.accordion'));
-  const accordionList = accordionTriggerList.map(function (accordionTriggerEl) {
-    accordionTriggerEl.addEventListener('show.bs.collapse', accordionActiveFunction);
-    accordionTriggerEl.addEventListener('hide.bs.collapse', accordionActiveFunction);
+  //===== close navbar-collapse when a  clicked
+  let navbarToggler = document.querySelector(".navbar-toggler");
+  const navbarCollapse = document.querySelector(".navbar-collapse");
+
+  document.querySelectorAll(".ud-menu-scroll").forEach((e) =>
+    e.addEventListener("click", () => {
+      navbarToggler.classList.remove("active");
+      navbarCollapse.classList.remove("show");
+    })
+  );
+  navbarToggler.addEventListener("click", function () {
+    navbarToggler.classList.toggle("active");
+    navbarCollapse.classList.toggle("show");
   });
 
-  // Auto update layout based on screen size
-  window.Helpers.setAutoUpdate(true);
+  // ===== submenu
+  const submenuButton = document.querySelectorAll(".nav-item-has-children");
+  submenuButton.forEach((elem) => {
+    elem.querySelector("a").addEventListener("click", () => {
+      elem.querySelector(".ud-submenu").classList.toggle("show");
+    });
+  });
 
-  // Toggle Password Visibility
-  window.Helpers.initPasswordToggle();
+  // ===== wow js
+  new WOW().init();
 
-  // Speech To Text
-  window.Helpers.initSpeechToText();
+  // ====== scroll top js
+  function scrollTo(element, to = 0, duration = 500) {
+    const start = element.scrollTop;
+    const change = to - start;
+    const increment = 20;
+    let currentTime = 0;
 
-  // Nav tabs animation
-  window.Helpers.navTabsAnimation();
+    const animateScroll = () => {
+      currentTime += increment;
 
-  // Manage menu expanded/collapsed with templateCustomizer & local storage
-  //------------------------------------------------------------------
+      const val = Math.easeInOutQuad(currentTime, start, change, duration);
 
-  // If current layout is horizontal OR current window screen is small (overlay menu) than return from here
-  if (window.Helpers.isSmallScreen()) {
-    return;
+      element.scrollTop = val;
+
+      if (currentTime < duration) {
+        setTimeout(animateScroll, increment);
+      }
+    };
+
+    animateScroll();
   }
 
-  // If current layout is vertical and current window screen is > small
+  Math.easeInOutQuad = function (t, b, c, d) {
+    t /= d / 2;
+    if (t < 1) return (c / 2) * t * t + b;
+    t--;
+    return (-c / 2) * (t * (t - 2) - 1) + b;
+  };
 
-  // Auto update menu collapsed/expanded based on the themeConfig
-  window.Helpers.setCollapsed(true, false);
+  document.querySelector(".back-to-top").onclick = () => {
+    scrollTo(document.documentElement);
+  };
 })();
